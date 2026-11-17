@@ -39,6 +39,12 @@
     "strictBlockMode": {
       "title": "Enable/disable strict blocking",
       "type": "boolean"
+    },
+    "customFilters": {
+      "title": "Custom filters, one per entry",
+      "description": "Replaces the custom filters whenever this list changes.",
+      "type": "array",
+      "items": { "type": "string" }
     }
   }
 }

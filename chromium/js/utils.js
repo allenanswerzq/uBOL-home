@@ -141,7 +141,8 @@ export const broadcastMessage = message => {
 // than another one.
 
 export function intFromVersion(version) {
-    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
+    // A fourth part counts moonpie's own changes on top of a release.
+    const match = /^(\d+)\.(\d+)\.(\d+)(?:\.\d+)?$/.exec(version);
     if ( match === null ) { return 0; }
     const year = parseInt(match[1], 10);
     const monthday = parseInt(match[2], 10);

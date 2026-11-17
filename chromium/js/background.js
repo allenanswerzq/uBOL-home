@@ -70,6 +70,7 @@ import {
 
 import {
     browser,
+    adminRead,
     localRead, localRemove, localWrite,
     runtime,
     sessionAccessLevel,
@@ -860,6 +861,35 @@ const isFullyInitialized = start().then(( ) => {
 }).then(restart => {
     if ( restart !== true ) { return; }
     runtime.reload();
+});
+
+/******************************************************************************/
+
+// The admin setting customFilters replaces the custom filters whenever the
+// policy's list changes. Edits made in the dashboard last until then.
+
+async function applyAdminCustomFilters() {
+    const filters = await adminRead('customFilters');
+    if ( Array.isArray(filters) === false ) { return; }
+    const text = filters.join('\n');
+    if ( await localRead('admin.customFilters.applied') === text ) { return; }
+    await setSandboxFilters(text);
+    await updateCompiledFilters();
+    await Promise.all([ registerUserScripts(), updateUserRules() ]);
+    await localWrite('admin.customFilters.applied', text);
+}
+
+isFullyInitialized.then(applyAdminCustomFilters).catch(reason => {
+    ubolErr(reason);
+});
+
+browser.storage.onChanged.addListener((changes, area) => {
+    if ( area !== 'managed' ) { return; }
+    isFullyInitialized.then(( ) =>
+        Promise.all([ loadAdminConfig(), applyAdminCustomFilters() ])
+    ).catch(reason => {
+        ubolErr(reason);
+    });
 });
 
 runtime.onMessage.addListener((request, sender, callback) => {
